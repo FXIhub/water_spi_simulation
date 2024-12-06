@@ -1,3 +1,17 @@
+# Ignoring results folders in repository
+average_reconstructions/
+denss/
+emc/
+figures/
+figures_fsc/
+phasing/
+r_factors/
+sims_protein_only/
+sims_water_only/
+slurm_output/
+sparse_frames_protein_only/
+sparse_frames_water_only/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
