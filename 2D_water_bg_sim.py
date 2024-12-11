@@ -1,12 +1,12 @@
 #!/home/toong/miniconda3/envs/cucondor/bin/python
-#SBATCH --job-name='water'
+#SBATCH --job-name='water_only'
 #SBATCH --time=3-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
-#SBATCH -o ./%j.out
-#SBATCH -e ./%j.out
+#SBATCH -o slurm_output/%j.out
+#SBATCH -e slurm_output/%j.out
 import os, sys
 from sys import stderr
 
@@ -30,7 +30,7 @@ c = constants.speed_of_light
 
 dsf = 12
 
-bg_mask = "agipd_detector_mask.h5"
+bg_mask = "emc/make_detector/agipd_detector_mask.h5"
 with h5py.File(bg_mask, "r") as det:
     det_mask = det["mask"][:]
 
@@ -48,14 +48,14 @@ phot_J = phot_eV * e
 phot_m = (h * c) / phot_J
 pulse_energy = 50e-6
 
-det_dist = 1.0
+det_dist = 0.5
 pixel_size = dsf * 200e-6
 dimX = 1092 // dsf
 dimY = 1092 // dsf
 pixel_num_x = dimX - dimX // 2
 pixel_num_y = dimY - dimY // 2
 
-focus_diam = 140e-9
+focus_diam = 14e-9
 focus_rad = focus_diam / 2
 
 beam_area = pi * (focus_rad**2)
@@ -79,9 +79,9 @@ resolution_max = phot_m / (2.0 * np.sin(theta_max))
 pat = np.ones_like(det_mask_ds)
 water_bg = add_water_saxs(pat, pixel_size, det_dist, phot_m, pulse_energy)
 
-sim_start, sim_end, sim_c = 0, 5, 1
+sim_start, sim_end, sim_c = 0, 10, 1
 n_sim = 10000
-pat_ext = "50k"
+pat_ext = "100k"
 
 for s in range(sim_start, sim_end):
     print(f"\rSimulating round {sim_c}/{sim_end-sim_start}...", flush=True)
@@ -107,8 +107,8 @@ for s in range(sim_start, sim_end):
 
     time_now = time.localtime(time.time())
 
-    base_dir = f"water_only/"
-    folder_name = f"debug_random_run_{s}_water_{pat_ext}_pats/"
+    base_dir = f"sims_water_only/"
+    folder_name = f"random_run_{s}_water_{pat_ext}_pats/"
 
     if os.path.exists(base_dir + folder_name):
         print("Path exists!", flush=True)

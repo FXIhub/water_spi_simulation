@@ -1,13 +1,13 @@
 #!/home/toong/miniconda3/envs/cucondor/bin/python
-#SBATCH --job-name='prot_in_water'
+#SBATCH --job-name='protein_with_water'
 #SBATCH --time=8-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='A100|V100'
+#SBATCH --constraint='A100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
-#SBATCH -o ./%j.out
-#SBATCH -e ./%j.out
+#SBATCH -o slurm_output/%j.out
+#SBATCH -e slurm_output/%j.out
 import os, sys
 from sys import stderr
 
@@ -33,7 +33,7 @@ c = constants.speed_of_light
 
 dsf = 12
 
-bg_mask = "agipd_detector_mask.h5"
+bg_mask = "emc/make_detector/agipd_detector_mask.h5"
 with h5py.File(bg_mask, "r") as det:
     det_mask = det["mask"][:]
 
@@ -49,11 +49,11 @@ det_mask_ds = det_mask_ds >= 56.0
 phot_eV = 9000
 phot_J = phot_eV * e
 phot_m = (h * c) / phot_J
-pulse_energy = 50e-4
+pulse_energy = 50e-6
 beam_pol = "horizontal"
 beam_profile = "gaussian"
 
-det_dist = 1.0
+det_dist = 0.5
 pixel_size = dsf * 200e-6
 dimX = 1092 // dsf
 dimY = 1092 // dsf
@@ -61,7 +61,7 @@ pixel_num_x = dimX - dimX // 2
 pixel_num_y = dimY - dimY // 2
 D_particle = 15e-9
 
-focus_diam = 140e-9
+focus_diam = 14e-9
 focus_rad = focus_diam / 2
 
 beam_area = pi * (focus_rad**2)
@@ -85,7 +85,7 @@ resolution_max = phot_m / (2.0 * np.sin(theta_max))
 oversampling = (det_dist * phot_m) / (pixel_size * D_particle)
 
 pat = np.zeros_like(det_mask_ds)
-water_bg = add_water_saxs(pat, pixel_size, det_dist, phot_m, 50e-6)
+water_bg = add_water_saxs(pat, pixel_size, det_dist, phot_m, pulse_energy)
 
 source = condor.Source(
     wavelength=phot_m,
@@ -95,7 +95,7 @@ source = condor.Source(
     profile_model=beam_profile,
 )
 
-map3d, dx = condor.utils.emdio.read_map("1ss8_ed_2.5_insolvent.mrc")
+map3d, dx = condor.utils.emdio.read_map("denss/1ss8_denss.mrc")
 map3d_scaled = electron_density_to_dn(map3d, phot_m)
 
 formalism = "random"
@@ -109,9 +109,9 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 0, 5, 1
+sim_start, sim_end, sim_c = 0, 10, 1
 n_sim = 10000
-pat_ext = "50k"
+pat_ext = "100k"
 
 for s in range(sim_start, sim_end):
     print(f"\rSimulating round {sim_c}/{sim_end-sim_start}...", flush=True)
@@ -153,8 +153,8 @@ for s in range(sim_start, sim_end):
     poiss_samp = def_rng.poisson(lam=particle_intens_masked)
     poiss_samp_water = def_rng.poisson(lam=particle_intens_water_masked)
 
-    base_dir = f"protein_in_water/"
-    folder_name = f"debug_random_run_{s}_protein_in_water_{pat_ext}_pats/"
+    base_dir = f"sims_protein_water/"
+    folder_name = f"random_run_{s}_protein_in_water_{pat_ext}_pats/"
 
     if os.path.exists(base_dir + folder_name):
         print("Path exists!", flush=True)
