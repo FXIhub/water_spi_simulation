@@ -183,32 +183,6 @@ def sphere_idx(shape, radius, position):
     return arr <= radius
 
 
-# from ChatGPT
-def cylinder_idx(shape, height, radius, position):
-    """Generate a 3D cylindrical mask."""
-    assert len(shape) == 3
-    assert len(position) == 3
-
-    # Create a 3D grid of indices
-    grid = np.indices(shape)
-
-    # Calculate the distance of each point in the grid from the center of the base of the cylinder
-    dist_from_center = np.sqrt(
-        (grid[0] - position[0]) ** 2 + (grid[1] - position[1]) ** 2
-    )
-
-    # Create a mask for the points within the radius of the cylinder
-    radius_mask = dist_from_center <= radius
-
-    # Create a mask for the points within the height of the cylinder
-    height_mask = (grid[2] >= position[2]) & (grid[2] <= position[2] + height)
-
-    # Combine the radius and height masks to create a cylindrical mask
-    cylinder_mask = radius_mask & height_mask
-
-    return cylinder_mask
-
-
 def electron_density_to_dn(map3d_ed, wavelength):
     classical_electron_radius = 2.81794e-15
     return wavelength**2 / (2 * np.pi) * classical_electron_radius * (map3d_ed * 1e30)

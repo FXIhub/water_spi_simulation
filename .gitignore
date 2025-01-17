@@ -1,5 +1,6 @@
 # Ignoring results folders in repository
 average_reconstructions/
+debugging/
 denss/
 emc/
 figures/

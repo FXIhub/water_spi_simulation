@@ -3,7 +3,7 @@
 #SBATCH --time=5-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='A100|V100'
+#SBATCH --constraint='A100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -28,11 +28,11 @@ c = constants.speed_of_light
 e = constants.elementary_charge
 h = constants.Planck
 
-subBg = True
+subBg = False
     
-vnum = "2"
+vnum = "1"
     
-emc_file = "emc/protein_with_water_debug_0001/data_50k/prot_wat_3/output_380.h5"
+emc_file = "emc/protein_water_0001/data_100k/prot_only_1/output_420.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -51,7 +51,7 @@ else:
 
 center = frame.shape[0] // 2
 
-sphere_rad = 65
+sphere_rad = 108
 mask_emc = sphere_idx(
     shape=frame.shape, radius=sphere_rad, position=(center, center, center)
 )
@@ -68,8 +68,8 @@ print(f"Phasing {pType} model ({npats} patterns)!")
 
 e_photon_eV = 9000
 lambda_photon = (h * c) / (e_photon_eV * e)
-d_detector = 1.0
-s_pixel = 2400e-6
+d_detector = 0.5
+s_pixel = 1400e-6
 
 dimX = frame.shape[0]
 dimY = frame.shape[1]
@@ -111,10 +111,10 @@ supp_phase = support_cyl
 
 alg = "raar"
 
-n_recons = 450
+n_recons = 500
 niter_alg = 500
 niter_er = 450
-niter_store = 2
+niter_store = 5
 
 beta_start = 0.70
 beta_end = 0.75
@@ -125,7 +125,7 @@ volume_i, volume_f = i_frac * vol_frac, f_frac * vol_frac
 blur_i, blur_f = 1.5, 1.0
 supp_update = 20
 
-niter_store_errors = 100
+niter_store_errors = 10
 
 recon_intens = frame.copy()
 recon_mask = mask_emc.copy()

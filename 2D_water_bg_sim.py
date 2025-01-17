@@ -28,7 +28,7 @@ e = constants.elementary_charge
 h = constants.Planck
 c = constants.speed_of_light
 
-dsf = 12
+dsf = 7
 
 bg_mask = "emc/make_detector/agipd_detector_mask.h5"
 with h5py.File(bg_mask, "r") as det:
@@ -41,7 +41,7 @@ d_mask_float = det_mask.astype(float)
 d_mask_float[det_mask == False] = np.nan
 
 det_mask_ds = block_reduce(d_mask_float, block_size=dsf, func=np.nansum)
-det_mask_ds = det_mask_ds >= 56.0
+det_mask_ds = det_mask_ds >= 15.
 
 phot_eV = 9000
 phot_J = phot_eV * e
@@ -108,7 +108,7 @@ for s in range(sim_start, sim_end):
     time_now = time.localtime(time.time())
 
     base_dir = f"sims_water_only/"
-    folder_name = f"random_run_{s}_water_{pat_ext}_pats/"
+    folder_name = f"run_{s}_water_{pat_ext}_pats/"
 
     if os.path.exists(base_dir + folder_name):
         print("Path exists!", flush=True)
