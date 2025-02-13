@@ -8,18 +8,18 @@ run(session, "log clear")
 n_searches_trans = 60
 n_searches_rot = 60
 n_searches = n_searches_rot + n_searches_trans
-fit_metric = "overlap"
+fit_metric = "correlation"
 
 # Condor model
-gt_file = "./3d_groel_agipd_9_kev_trm.h5"
+gt_file = "../debug_resampled_intensities/3d_groel_agipd_9_kev_denss_trm.h5"
 gt_file_mrc = gt_file.split(sep=".h5")[0] + f"_{n_searches}.mrc"
-center_gt = 45
+center_gt = 181.5
 run(session, f"open {gt_file}")
 run(session, f"volume #1 originIndex {center_gt},{center_gt},{center_gt}")
 
 # EMC models
-emc_files = glob.glob("./*_corr.h5")
-center_emc = 64.5
+emc_files = glob.glob("../debug_resampled_intensities/*_corr.h5")
+center_emc = 181.5
 N_files = len(emc_files)
 
 # Loop over all models and fit model EMC intensity into Condor intensity
