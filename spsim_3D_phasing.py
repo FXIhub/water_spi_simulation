@@ -19,7 +19,7 @@ import time
 import scipy
 import scipy.constants as constants
 
-from helper_functions import sphere_idx, cylinder_idx
+from helper_functions import sphere_idx
 
 import spimage
 
@@ -32,7 +32,7 @@ subBg = False
     
 vnum = "1"
     
-emc_file = "emc/protein_water_0001/data_100k/prot_only_1/output_420.h5"
+emc_file = "emc/protein_water_no_ds_0001/data_100k_40x_masked_resampled/prot_only_0/output_220.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -51,7 +51,7 @@ else:
 
 center = frame.shape[0] // 2
 
-sphere_rad = 108
+sphere_rad = 182
 mask_emc = sphere_idx(
     shape=frame.shape, radius=sphere_rad, position=(center, center, center)
 )
@@ -69,7 +69,7 @@ print(f"Phasing {pType} model ({npats} patterns)!")
 e_photon_eV = 9000
 lambda_photon = (h * c) / (e_photon_eV * e)
 d_detector = 0.5
-s_pixel = 1400e-6
+s_pixel = 200e-6
 
 dimX = frame.shape[0]
 dimY = frame.shape[1]
@@ -80,50 +80,37 @@ theta_pixel = 0.5 * np.arctan((pixel_num * s_pixel) / d_detector)
 resolution = lambda_photon / (2.0 * np.sin(theta_pixel))
 voxel_size = 0.5 * resolution
 
-D_particle = 15e-9
-R_particle = np.ceil(D_particle / voxel_size) / 2
-volume_fraction_sp = ((4 / 3) * pi * (R_particle**3)) / (dimX * dimY * dimZ)
-
-support_sp = sphere_idx(
-    shape=frame.shape, radius=R_particle, position=(dimX // 2, dimY // 2, dimZ // 2)
-)
-
-H_part = 14.7e-9
-D_part = 13.7e-9
-R_part = D_part / 2
-
-H_particle_vox = H_part / voxel_size
+R_part = (15e-9) / 2
 R_particle_vox = R_part / voxel_size
 
-volume_fraction_cyl = (H_particle_vox * pi * (R_particle_vox**2)) / (
+volume_fraction_sphere = (((4/3) * pi) * (R_particle_vox**3)) / (
     dimX * dimY * dimZ
 )
 
-support_cyl = cylinder_idx(
+support_sphere = sphere_idx(
     shape=frame.shape,
-    height=H_particle_vox,
     radius=R_particle_vox,
     position=(dimX // 2, dimY // 2, dimZ // 2),
 )
 
-vol_frac = volume_fraction_cyl
-supp_phase = support_cyl
+vol_frac = volume_fraction_sphere
+supp_phase = support_sphere
 
 alg = "raar"
 
 n_recons = 500
-niter_alg = 500
-niter_er = 450
+niter_alg = 600
+niter_er = 100
 niter_store = 5
 
-beta_start = 0.70
-beta_end = 0.75
+beta_start = 0.90
+beta_end = 0.95
 
-i_frac, f_frac = 1.1, 1.01
+i_frac, f_frac = 1.1, 1.0
 volume_i, volume_f = i_frac * vol_frac, f_frac * vol_frac
 
-blur_i, blur_f = 1.5, 1.0
-supp_update = 20
+blur_i, blur_f = 2.5, 1.0
+supp_update = 40
 
 niter_store_errors = 10
 
