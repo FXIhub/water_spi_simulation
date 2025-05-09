@@ -11,15 +11,15 @@ n_searches = n_searches_rot + n_searches_trans
 fit_metric = "correlation"
 
 # Condor model
-gt_file = "../debug_resampled_intensities/3d_groel_agipd_9_kev_denss_trm.h5"
+gt_file = "../3d_groel_agipd_9_kev_denss_dsf_6x_trm.h5"
 gt_file_mrc = gt_file.split(sep=".h5")[0] + f"_{n_searches}.mrc"
-center_gt = 181.5
+center_gt = 125.5 # for 6x it is 125.5 and for 4x it is 186.5
 run(session, f"open {gt_file}")
 run(session, f"volume #1 originIndex {center_gt},{center_gt},{center_gt}")
 
 # EMC models
-emc_files = glob.glob("../debug_resampled_intensities/*_corr.h5")
-center_emc = 181.5
+emc_files = glob.glob("../*_corr.h5")
+center_emc = 125.5 # for 6x it is 125.5 and for 4x it is 186.5
 N_files = len(emc_files)
 
 # Loop over all models and fit model EMC intensity into Condor intensity
