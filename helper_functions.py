@@ -36,6 +36,7 @@ def r_factor(vol_ideal=None, vol_real=None, sphere_thickness=1):
     R-factor of two diffraction patterns. The sum within each resolution sphere is calculated including the maximum resolution of the sphere.
     """
     F_ideal = np.sqrt(vol_ideal)
+    vol_real[vol_real < 0.] = 0. # set negative voxels to 0 to prevent
     F_real = np.sqrt(vol_real)
 
     im_dim = np.array(F_ideal.shape)
