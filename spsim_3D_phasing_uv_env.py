@@ -1,6 +1,6 @@
-#!/home/toong/miniconda3/envs/cucondor/bin/python
+#!/gpfs/exfel/u/scratch/SPB/202325/p006056/filipe/uv_proj/.venv/bin/python
 #SBATCH --job-name='water_phasing'
-#SBATCH --time=5-00:00:00
+#SBATCH --time=10-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
 #SBATCH --constraint='A100'
@@ -10,7 +10,9 @@
 #SBATCH -e slurm_output/%j.out
 import os, os.path, sys
 
-sys.path.append("./")
+sys.path.append("/gpfs/exfel/u/scratch/SPB/202325/p006056/tong/water_spi_paper/")
+from helper_functions import sphere_idx
+
 import h5py 
 import numpy as np
 
@@ -18,8 +20,6 @@ import time
 
 import scipy
 import scipy.constants as constants
-
-from helper_functions import sphere_idx
 
 import spimage
 
@@ -30,9 +30,9 @@ h = constants.Planck
 
 subBg = False
     
-vnum = "1"
+vnum = "2"
     
-emc_file = "emc/protein_water_no_ds_0001/data_100k_40x_masked_resampled/prot_only_0/output_220.h5"
+emc_file = "emc/protein_water_ds_4x_0001/data_100k/prot_only_0/output_120.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -51,7 +51,7 @@ else:
 
 center = frame.shape[0] // 2
 
-sphere_rad = 182
+sphere_rad = 187
 mask_emc = sphere_idx(
     shape=frame.shape, radius=sphere_rad, position=(center, center, center)
 )
@@ -62,6 +62,7 @@ fourier_mask = "mask_emc"
 
 file = emc_file
 npats = file.split(sep="/")[2].split(sep="_")[1]
+dType = file.split(sep="/")[1]
 sType = file.split(sep="/")[2]
 pType = "emc_" + file.split(sep="/")[3]
 print(f"Phasing {pType} model ({npats} patterns)!")
@@ -69,7 +70,7 @@ print(f"Phasing {pType} model ({npats} patterns)!")
 e_photon_eV = 9000
 lambda_photon = (h * c) / (e_photon_eV * e)
 d_detector = 0.5
-s_pixel = 200e-6
+s_pixel = 800e-6
 
 dimX = frame.shape[0]
 dimY = frame.shape[1]
@@ -96,56 +97,52 @@ support_sphere = sphere_idx(
 vol_frac = volume_fraction_sphere
 supp_phase = support_sphere
 
-alg = "raar"
+alg = "diffmap"
 
-n_recons = 500
-niter_alg = 600
-niter_er = 100
-niter_store = 5
+n_recons = 180
+niter_alg = 500
+niter_er = 300
+niter_store = 2
 
 beta_start = 0.90
 beta_end = 0.95
 
-i_frac, f_frac = 1.1, 1.0
+i_frac, f_frac = 2.0, 0.85
 volume_i, volume_f = i_frac * vol_frac, f_frac * vol_frac
 
-blur_i, blur_f = 2.5, 1.0
-supp_update = 40
+blur_i, blur_f = 1.5, 1.0
+supp_update = 50
 
-niter_store_errors = 10
+niter_store_errors = (niter_alg + niter_er) // supp_update
 
 recon_intens = frame.copy()
 recon_mask = mask_emc.copy()
 
 def_rng = np.random.default_rng()
 
-recon_real_array = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape))
-recon_phase_array = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape))
+recon_real_array = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape), dtype=np.complex64)
+recon_fourier_array = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape), dtype=np.complex64)
+recon_support_array = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape), dtype=np.bool)
 
-recon_real_array_nosupp = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape))
-recon_phase_array_nosupp = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape))
-
-recon_fourier_array = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape))
-recon_fourier_poiss_array = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape))
-
-support_array = np.zeros(shape=(n_recons, niter_store, *recon_intens.shape))
-
+support_size_array = np.zeros(shape=(n_recons, niter_store_errors))
 error_real_array = np.zeros(shape=(n_recons, niter_store_errors))
 error_fourier_array = np.zeros(shape=(n_recons, niter_store_errors))
 
-constraints_list = ["enforce_positivity", "enforce_real"]
+#constraints_list = ["enforce_positivity","enforce_real"]
+constraints_list = ["enforce_real"]
 
 time_now = time.localtime(time.time())
 print(f"Phasing: {file}", flush=True)
 if subBg:
     print(f"Background file: {emc_bg_file}", flush=True)
-print(f"Cylinder height and diameter: {H_part*1e9} nm and {D_part*1e9} nm", flush=True)
+print(f"Sphere diameter: {2*R_part*1e9} nm", flush=True)
 print(f"Beta_start: {beta_start}", flush=True)
 print(f"Beta_end: {beta_end}", flush=True)
 print(f"Fourier mask: {fourier_mask}", flush=True)
 print(f"Photon energy: {e_photon_eV}", flush=True)
 print(f"Voxel size: {voxel_size*1e9} nm", flush=True)
 print(f"Version: {vnum}", flush=True)
+
 for i in range(n_recons):
     print(f"{i+1}/{n_recons}", flush=True)
     phaser = spimage.Reconstructor()
@@ -166,8 +163,9 @@ for i in range(n_recons):
         area_init=volume_i,
         area_final=volume_f,
         update_period=supp_update,
-        number_of_iterations=niter_alg + niter_er,
+        number_of_iterations=niter_alg + niter_er
     )
+    
     if alg == "diffmap":
         phaser.append_phasing_algorithm(
             alg,
@@ -194,35 +192,23 @@ for i in range(n_recons):
 
     output = phaser.reconstruct()
 
-    recon_real = output["real_space"]
-    recon_fourier = output["fourier_space"]
+    real_space = output["real_space"].astype('complex64')
+    fourier_space = output["fourier_space"].astype('complex64')
     support = output["support"]
+    support_size = output["support_size"]
+    
     error_real = output["real_error"]
     error_fourier = output["fourier_error"]
 
-    object_density = np.abs(recon_real)
-    object_density[support == False] = 0.0
-    object_phase = np.angle(recon_real)
-    object_phase[support == False] = 0.0
-
-    object_density_nsp = np.abs(recon_real)
-    object_phase_nsp = np.angle(recon_real)
-
-    object_fourier = np.abs(recon_fourier) ** 2
-    object_fourier_poiss = def_rng.poisson(lam=object_fourier)
-
-    recon_real_array[i] = object_density
-    recon_phase_array[i] = object_phase
-    recon_real_array_nosupp[i] = object_density_nsp
-    recon_phase_array_nosupp[i] = object_phase_nsp
-
-    recon_fourier_array[i] = object_fourier
-    recon_fourier_poiss_array[i] = object_fourier_poiss
-    support_array[i] = support
+    recon_real_array[i] = real_space
+    recon_fourier_array[i] = fourier_space
+    recon_support_array[i] = support
+    
+    support_size_array[i] = support_size
     error_real_array[i] = error_real
     error_fourier_array[i] = error_fourier
 
-save_location = f"phasing/{sType}_{pType[4:]}_v_{vnum}/"
+save_location = f"phasing/{dType}_{sType}_{pType[4:]}_v_{vnum}/"
 
 if os.path.exists(save_location) == False:
     os.mkdir(save_location)
@@ -234,20 +220,10 @@ with h5py.File(save_location + corr_model_fname + "_corr.h5", mode="a") as handl
     handle["intens"] = corr_model
 
 np.save(save_location + "recon_real.npy", recon_real_array, allow_pickle=False)
-np.save(save_location + "recon_phase.npy", recon_phase_array, allow_pickle=False)
-np.save(
-    save_location + "recon_real_nsp.npy", recon_real_array_nosupp, allow_pickle=False
-)
-np.save(
-    save_location + "recon_phase_nsp.npy", recon_phase_array_nosupp, allow_pickle=False
-)
 np.save(save_location + "recon_fourier.npy", recon_fourier_array, allow_pickle=False)
-np.save(
-    save_location + "recon_fourier_poiss.npy",
-    recon_fourier_poiss_array,
-    allow_pickle=False,
-)
-np.save(save_location + "support.npy", support_array, allow_pickle=False)
+np.save(save_location + "recon_support.npy", recon_support_array, allow_pickle=False)
+
+np.save(save_location + "support_size.npy", support_size_array, allow_pickle=False)
 np.save(save_location + "error_real.npy", error_real_array, allow_pickle=False)
 np.save(save_location + "error_fourier.npy", error_fourier_array, allow_pickle=False)
 
@@ -277,7 +253,7 @@ with open(save_location + "phasing_params.txt", "w") as handle:
     handle.write(f"Beta parameter initial: {beta_start}\n")
     handle.write(f"Beta parameter final: {beta_end}\n")
     handle.write(f"Gaussian blur min/max: {blur_i}/{blur_f}\n")
-    handle.write(f"Support update frequency: {supp_update}\n")
+    handle.write(f"Support update period: {supp_update}\n")
     handle.write(
         f"#########################################################################################\n"
     )

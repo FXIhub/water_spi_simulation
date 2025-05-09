@@ -1,8 +1,9 @@
 #!/home/toong/miniconda3/envs/cucondor/bin/python
 #SBATCH --job-name='water_only'
-#SBATCH --time=3-00:00:00
+#SBATCH --time=12-00:00:00
 #SBATCH --nodes=1
-#SBATCH --partition=allgpu
+#SBATCH --partition=upex
+#SBATCH --constraint='EPYC'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -28,32 +29,41 @@ e = constants.elementary_charge
 h = constants.Planck
 c = constants.speed_of_light
 
-dsf = 7
+dsf = 4
 
 bg_mask = "emc/make_detector/agipd_detector_mask.h5"
 with h5py.File(bg_mask, "r") as det:
     det_mask = det["mask"][:]
 
-cy_agipd, cx_agipd = det_mask.shape[0] // 2, det_mask.shape[1] // 2
-det_mask = det_mask[cy_agipd - cx_agipd : cy_agipd + cx_agipd]
+cy, cx = det_mask.shape[0] // 2, det_mask.shape[1] // 2
+det_mask = det_mask[cy - cx : cy + cx]
 
-d_mask_float = det_mask.astype(float)
-d_mask_float[det_mask == False] = np.nan
-
-det_mask_ds = block_reduce(d_mask_float, block_size=dsf, func=np.nansum)
-det_mask_ds = det_mask_ds >= 15.
-
+if dsf == 1:
+    det_mask_ds = det_mask
+else:
+    d_mask_float = det_mask.astype(float)
+    d_mask_float[det_mask == False] = np.nan
+    
+    det_mask_ds = block_reduce(d_mask_float, block_size=dsf, func=np.nansum)
+    det_mask_ds = (det_mask_ds >= 1.) # 2. for 6x downsampling, and 1. for 4x downsampling
+    
 phot_eV = 9000
 phot_J = phot_eV * e
 phot_m = (h * c) / phot_J
-pulse_energy = 50e-6
+pulse_energy = 200e-6
 
-det_dist = 0.5
-pixel_size = dsf * 200e-6
-dimX = 1092 // dsf
-dimY = 1092 // dsf
+if dsf == 1:
+    pixel_size = 200e-6
+    dimX = det_mask.shape[1]
+    dimY = det_mask.shape[0]
+else:
+    pixel_size = dsf * 200e-6
+    dimX = det_mask.shape[1] // dsf
+    dimY = det_mask.shape[0] // dsf
 pixel_num_x = dimX - dimX // 2
 pixel_num_y = dimY - dimY // 2
+
+det_dist = 0.5
 
 focus_diam = 14e-9
 focus_rad = focus_diam / 2
@@ -79,9 +89,9 @@ resolution_max = phot_m / (2.0 * np.sin(theta_max))
 pat = np.ones_like(det_mask_ds)
 water_bg = add_water_saxs(pat, pixel_size, det_dist, phot_m, pulse_energy)
 
-sim_start, sim_end, sim_c = 0, 10, 1
-n_sim = 10000
-pat_ext = "100k"
+sim_start, sim_end, sim_c = 0, 50, 1
+n_sim = 20000
+pat_ext = "1000k"
 
 for s in range(sim_start, sim_end):
     print(f"\rSimulating round {sim_c}/{sim_end-sim_start}...", flush=True)
@@ -108,7 +118,7 @@ for s in range(sim_start, sim_end):
     time_now = time.localtime(time.time())
 
     base_dir = f"sims_water_only/"
-    folder_name = f"run_{s}_water_{pat_ext}_pats/"
+    folder_name = f"run_{s}_water_{pat_ext}_pats_dsf_{dsf}x/"
 
     if os.path.exists(base_dir + folder_name):
         print("Path exists!", flush=True)

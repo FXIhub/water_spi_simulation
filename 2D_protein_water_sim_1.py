@@ -1,9 +1,9 @@
 #!/home/toong/miniconda3/envs/cucondor/bin/python
 #SBATCH --job-name='protein_with_water'
-#SBATCH --time=8-00:00:00
+#SBATCH --time=12-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='A100'
+#SBATCH --constraint='V100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -31,7 +31,7 @@ e = constants.elementary_charge
 h = constants.Planck
 c = constants.speed_of_light
 
-dsf = 1
+dsf = 4
 
 bg_mask = "emc/make_detector/agipd_detector_mask.h5"
 with h5py.File(bg_mask, "r") as det:
@@ -47,29 +47,29 @@ else:
     d_mask_float[det_mask == False] = np.nan
     
     det_mask_ds = block_reduce(d_mask_float, block_size=dsf, func=np.nansum)
-    det_mask_ds = det_mask_ds >= 15.
+    det_mask_ds = (det_mask_ds >= 1.) # 2. for 6x downsampling, and 1. for 4x downsampling
 
 phot_eV = 9000
 phot_J = phot_eV * e
 phot_m = (h * c) / phot_J
-pulse_energy = 50e-6
+pulse_energy = 200e-6
 beam_pol = "horizontal"
 beam_profile = "gaussian"
 
 if dsf == 1:
     pixel_size = 200e-6
-    dimX = det_mask_ds.shape[1]
-    dimY = det_mask_ds.shape[0]
+    dimX = det_mask.shape[1]
+    dimY = det_mask.shape[0]
 else:
     pixel_size = dsf * 200e-6
-    dimX = det_mask_ds.shape[1] // dsf
-    dimY = det_mask_ds.shape[0] // dsf
+    dimX = det_mask.shape[1] // dsf
+    dimY = det_mask.shape[0] // dsf
 pixel_num_x = dimX - dimX // 2
 pixel_num_y = dimY - dimY // 2
 
 det_dist = 0.5
 
-D_particle = 15e-9
+D_particle = 15e-9 # assume largest size for GroEL
 focus_diam = 14e-9
 focus_rad = focus_diam / 2
 
@@ -93,7 +93,7 @@ resolution_max = phot_m / (2.0 * np.sin(theta_max))
 
 oversampling = (det_dist * phot_m) / (pixel_size * D_particle)
 
-pat = np.zeros_like(det_mask_ds)
+pat = np.ones_like(det_mask_ds)
 water_bg = add_water_saxs(pat, pixel_size, det_dist, phot_m, pulse_energy)
 
 source = condor.Source(
@@ -118,7 +118,7 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 43, 50, 1
+sim_start, sim_end, sim_c = 45, 50, 1
 n_sim = 2000
 pat_ext = "100k"
 
@@ -159,11 +159,12 @@ for s in range(sim_start, sim_end):
     particle_intens_masked[det_mask_ds_stack == False] = 0.0
     particle_intens_water_masked[det_mask_ds_stack == False] = 0.0
 
+    poiss_samp_no_mask = def_rng.poisson(lam=particle_intens)
     poiss_samp = def_rng.poisson(lam=particle_intens_masked)
     poiss_samp_water = def_rng.poisson(lam=particle_intens_water_masked)
 
     base_dir = f"sims_protein_water/"
-    folder_name = f"run_{s}_protein_in_water_{pat_ext}_pats/"
+    folder_name = f"run_{s}_protein_in_water_{pat_ext}_pats_dsf_{dsf}x/"
 
     if os.path.exists(base_dir + folder_name):
         print("Path exists!", flush=True)
@@ -209,6 +210,10 @@ for s in range(sim_start, sim_end):
     np.save(
         base_dir + folder_name + "particle_intens.npy",
         arr=particle_intens,
+    )
+    np.save(
+        base_dir + folder_name + "poisson_prot.npy",
+        arr=poiss_samp_no_mask,
     )
     np.save(
         base_dir + folder_name + "poisson_prot_masked.npy",
