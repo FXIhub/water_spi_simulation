@@ -88,7 +88,7 @@ def _radial(image, f=np.mean, shell_thickness=1, **kwargs):
     r_out = np.arange(
         shell_thickness, (num_shells + 1) * shell_thickness, shell_thickness
     )
-    r_in = r_out - 1
+    r_in = r_out - shell_thickness
 
     if n_dim == 2:
         image = image[:, :, None]

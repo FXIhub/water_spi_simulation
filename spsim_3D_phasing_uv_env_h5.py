@@ -25,10 +25,10 @@ c = constants.speed_of_light
 e = constants.elementary_charge
 h = constants.Planck
 
-subBg = True
-vnum = "3"
+subBg = False
+vnum = "2"
     
-emc_file = "emc/protein_water_ds_4x_0001/data_1M/prot_wat_0/output_120.h5"
+emc_file = "emc/protein_water_ds_4x_strict_mask_0001/data_100k/prot_only_0/output_120.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -104,7 +104,7 @@ supp_update = 50
 
 niter_store_errors = (niter_alg + niter_er) // supp_update
 
-constraints_list = ["enforce_positivity"]
+constraints_list = ["enforce_real","enforce_positivity"]
 
 save_location = f"phasing/{dType}_{sType}_{pType[4:]}_v_{vnum}_h5/"
 if not os.path.exists(save_location):
