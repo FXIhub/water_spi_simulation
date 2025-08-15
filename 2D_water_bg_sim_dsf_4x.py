@@ -1,6 +1,6 @@
-#!/home/toong/miniconda3/envs/cucondor/bin/python
+#!/gpfs/exfel/u/scratch/SPB/202325/p006056/tong/miniforge3/envs/spimage/bin/python
 #SBATCH --job-name='water_only'
-#SBATCH --time=12-00:00:00
+#SBATCH --time=1-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=upex
 #SBATCH --constraint='EPYC'
@@ -89,25 +89,22 @@ resolution_max = phot_m / (2.0 * np.sin(theta_max))
 pat = np.ones_like(det_mask_ds)
 water_bg = add_water_saxs(pat, pixel_size, det_dist, phot_m, pulse_energy)
 
-sim_start, sim_end, sim_c = 0, 50, 1
+sim_start, sim_end, sim_c = 0, 5, 1
 n_sim = 20000
-pat_ext = "1000k"
+pat_ext = "100k"
+water_stacked = np.broadcast_to(water_bg, (n_sim,) + water_bg.shape).astype(
+    np.float64
+)
 
 for s in range(sim_start, sim_end):
     print(f"\rSimulating round {sim_c}/{sim_end-sim_start}...", flush=True)
     print(f"Simulating {n_sim} water background patterns...", flush=True)
-    particle_intens = np.zeros(shape=(n_sim, dimY, dimX))
-    particle_real = np.zeros(shape=(n_sim, dimY, dimX))
-    particle_orientations = np.zeros(shape=(n_sim, 4))
 
     def_rng = np.random.default_rng()
 
     det_mask_ds_stack = np.broadcast_to(
         det_mask_ds, (n_sim,) + det_mask_ds.shape
     ).astype(np.float64)
-    water_stacked = np.broadcast_to(water_bg, (n_sim,) + water_bg.shape).astype(
-        np.float64
-    )
 
     water_stacked_mask = water_stacked.copy()
     water_stacked_mask[det_mask_ds_stack == False] = 0.0

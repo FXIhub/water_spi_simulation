@@ -1,9 +1,9 @@
 #!/gpfs/exfel/u/scratch/SPB/202325/p006056/filipe/uv_proj/.venv/bin/python
 #SBATCH --job-name='water_phasing_h5'
-#SBATCH --time=10-00:00:00
+#SBATCH --time=11-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='V100'
+#SBATCH --constraint='A100|V100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -26,9 +26,9 @@ e = constants.elementary_charge
 h = constants.Planck
 
 subBg = False
-vnum = "2"
+vnum = "1"
     
-emc_file = "emc/protein_water_ds_4x_strict_mask_0001/data_100k/prot_only_0/output_120.h5"
+emc_file = "emc/protein_water_ds_4x_0001/data_100k/prot_only_0/output_130.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -37,7 +37,7 @@ I_emc = I_emc[:-1, :-1, :-1]
 W_emc = W_emc[:-1, :-1, :-1]
 
 if subBg:
-    emc_bg_file = "emc/water_only_ds_4x_0001/data_1M/wat_only_0/output_120.h5"
+    emc_bg_file = "emc/water_only_ds_4x_0001/data_1M/wat_only_0/output_140.h5"
     with h5py.File(emc_bg_file, "r") as f_bg:
         I_emc_bg = np.squeeze(f_bg["intens"][:])
     I_emc_bg = I_emc_bg[:-1, :-1, :-1]
@@ -61,7 +61,7 @@ print(f"Phasing {pType} model ({npats} patterns)!")
 e_photon_eV = 9000
 lambda_photon = (h * c) / (e_photon_eV * e)
 d_detector = 0.5
-s_pixel = 800e-6 # 800e-6 for 4x and 1200e-6 for 6x
+s_pixel = 800e-6
 
 dimX = frame.shape[0]
 dimY = frame.shape[1]
@@ -69,7 +69,11 @@ dimZ = frame.shape[2]
 
 pixel_num = dimX - dimX // 2
 theta_pixel = 0.5 * np.arctan((pixel_num * s_pixel) / d_detector)
+center_to_corner = np.sqrt((pixel_num * s_pixel) ** 2 + (pixel_num * s_pixel) ** 2)
+theta_max = 0.5 * np.arctan(center_to_corner / d_detector)
+
 resolution = lambda_photon / (2.0 * np.sin(theta_pixel))
+resolution_max = lambda_photon / (2.0 * np.sin(theta_max))
 voxel_size = 0.5 * resolution
 
 R_part = (15e-9) / 2
@@ -86,17 +90,16 @@ support_sphere = sphere_idx(
 vol_frac = volume_fraction_sphere
 supp_phase = support_sphere
 
-alg = "diffmap"
-
+alg = "raar"
 n_recons = 140
-niter_alg = 350
+niter_alg = 500
 niter_er = 300
 niter_store = 2
 
-beta_start = 0.55
-beta_end = 0.60
+beta_start = 0.85
+beta_end = beta_start
 
-i_frac, f_frac = 1.5, 0.85
+i_frac, f_frac = 1.3, 0.85
 volume_i, volume_f = i_frac * vol_frac, f_frac * vol_frac
 
 blur_i, blur_f = 1.5, 1.0

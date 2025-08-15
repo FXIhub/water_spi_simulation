@@ -1,5 +1,16 @@
 # Ignoring results folders in repository
+%userprofile%.condapkgs/
+debugging_code/
 average_reconstructions/
+average_reconstructions_old/
+figures_debugging_support/
+figures_diffmap/
+figures_old/
+images/
+phasing_debugging_support/
+phasing_final_check/
+phasing_old/
+phasing_prot_only_all/
 denss/
 emc/
 figures/
@@ -23,6 +34,13 @@ sparse_frames_protein_water/
 sparse_frames_protein_water/
 sparse_frames_water/
 debugging/
+
+# Ignoring debugging scripts/files
+solid_angle.py
+debug.pdb
+polarization_debugging.ipynb
+polarization_debugging_copy.ipynb
+spsim_3D_phasing_uv_env_old.py
 
 # Ignoring the Untitled notebook
 Untitled.ipynb

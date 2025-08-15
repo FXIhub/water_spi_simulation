@@ -1,9 +1,9 @@
-#!/home/toong/miniconda3/envs/cucondor/bin/python
+#!/gpfs/exfel/u/scratch/SPB/202325/p006056/tong/miniforge3/envs/spimage/bin/python
 #SBATCH --job-name='protein_with_water'
-#SBATCH --time=12-00:00:00
+#SBATCH --time=1-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='V100'
+#SBATCH --constraint='A100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -118,9 +118,9 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 17, 25, 1
-n_sim = 2000
-pat_ext = "100k"
+sim_start, sim_end, sim_c = 0, 1, 1
+n_sim = 1000
+pat_ext = "100"
 
 for s in range(sim_start, sim_end):
     print(f"\rSimulating round {sim_c}/{sim_end-sim_start} (round {sim_start} - round {sim_end}) ...", flush=True)

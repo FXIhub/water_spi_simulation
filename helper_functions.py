@@ -36,7 +36,7 @@ def r_factor(vol_ideal=None, vol_real=None, sphere_thickness=1):
     R-factor of two diffraction patterns. The sum within each resolution sphere is calculated including the maximum resolution of the sphere.
     """
     F_ideal = np.sqrt(vol_ideal)
-    vol_real[vol_real < 0.] = 0. # set negative voxels to 0 to prevent
+    vol_real[vol_real < 0.] = 0. # set negative voxels to 0 to prevent negative values in R factor comparison
     F_real = np.sqrt(vol_real)
 
     im_dim = np.array(F_ideal.shape)
@@ -192,31 +192,22 @@ def electron_density_to_dn(map3d_ed, wavelength):
 
 
 def add_water_saxs(img, px_size, distance, wavelength, pulse_energy):
-    c = [img.shape[0] / 2, img.shape[1] / 2]
-    px, py = np.meshgrid(
-        np.linspace(-c[0], c[0], img.shape[0]), np.linspace(-c[1], c[1], img.shape[1])
-    )
+    c = [(img.shape[0] - 1) / 2, (img.shape[1] - 1) / 2]
+    py, px = np.meshgrid(np.linspace(-c[0], c[0], img.shape[0]), np.linspace(-c[1], c[1], img.shape[1]), indexing = 'ij')
     r = np.sqrt(px** 2 + py**2)
     rr = np.sqrt((r * px_size) ** 2 + distance**2)
-    theta = np.arctan((r * px_size) / distance) / 2
+    theta = np.arctan((r * px_size) / distance)
 
     water_xs = 0.01632  # cm^-1
     sample_thickness = 50e-7 # cm
-
+    
     pixel_solid_angle = (np.cos(theta) ** 3) * ((px_size / distance) ** 2)
-    pol_correction = np.cos(np.arcsin((px * px_size) / rr)) ** 2
-
+    pol_correction = np.cos(np.arcsin((px * px_size) / rr)) ** 2 # horizontal polarization
     hc = scipy.constants.h * scipy.constants.c
     n_photons = pulse_energy / (hc / wavelength)
 
-    water = (
-        np.ones_like(img)
-        * sample_thickness
-        * pixel_solid_angle
-        * pol_correction
-        * n_photons
-        * water_xs
-    )
+    water = (np.ones_like(img) * sample_thickness * pixel_solid_angle * pol_correction * n_photons * water_xs)
+
     return water
 
 
