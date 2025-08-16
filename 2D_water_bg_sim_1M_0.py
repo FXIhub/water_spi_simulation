@@ -1,6 +1,6 @@
 #!/gpfs/exfel/u/scratch/SPB/202325/p006056/tong/miniforge3/envs/spimage/bin/python
 #SBATCH --job-name='water_only'
-#SBATCH --time=1-00:00:00
+#SBATCH --time=2-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=upex
 #SBATCH --constraint='EPYC'
@@ -45,7 +45,7 @@ else:
     d_mask_float[det_mask == False] = np.nan
     
     det_mask_ds = block_reduce(d_mask_float, block_size=dsf, func=np.nansum)
-    det_mask_ds = (det_mask_ds >= 1.) # 2. for 6x downsampling, and 1. for 4x downsampling
+    det_mask_ds = (det_mask_ds >= 1.) # 1. for 4x downsampling
     
 phot_eV = 9000
 phot_J = phot_eV * e
@@ -89,9 +89,9 @@ resolution_max = phot_m / (2.0 * np.sin(theta_max))
 pat = np.ones_like(det_mask_ds)
 water_bg = add_water_saxs(pat, pixel_size, det_dist, phot_m, pulse_energy)
 
-sim_start, sim_end, sim_c = 0, 5, 1
+sim_start, sim_end, sim_c = 0, 50, 1
 n_sim = 20000
-pat_ext = "100k"
+pat_ext = "1M"
 water_stacked = np.broadcast_to(water_bg, (n_sim,) + water_bg.shape).astype(
     np.float64
 )
