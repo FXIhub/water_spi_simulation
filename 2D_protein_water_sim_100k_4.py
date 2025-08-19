@@ -47,7 +47,7 @@ else:
     d_mask_float[det_mask == False] = np.nan
     
     det_mask_ds = block_reduce(d_mask_float, block_size=dsf, func=np.nansum)
-    det_mask_ds = (det_mask_ds >= 1.) # 2. for 6x downsampling, and 1. for 4x downsampling
+    det_mask_ds = (det_mask_ds >= 1.) # 1. for 4x downsampling
 
 phot_eV = 9000
 phot_J = phot_eV * e
@@ -118,7 +118,7 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 0, 5, 1
+sim_start, sim_end, sim_c = 4, 5, 1
 n_sim = 20000
 pat_ext = "100k"
 
