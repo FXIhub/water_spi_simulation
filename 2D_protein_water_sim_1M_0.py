@@ -1,9 +1,9 @@
 #!/gpfs/exfel/u/scratch/SPB/202325/p006056/tong/miniforge3/envs/spimage/bin/python
 #SBATCH --job-name='protein_with_water'
-#SBATCH --time=1-00:00:00
+#SBATCH --time=14-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='A100'
+#SBATCH --constraint='A100|V100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -118,9 +118,9 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 0, 1, 1
-n_sim = 1000
-pat_ext = "100"
+sim_start, sim_end, sim_c = 7, 20, 1
+n_sim = 5000
+pat_ext = "1M"
 
 for s in range(sim_start, sim_end):
     print(f"\rSimulating round {sim_c}/{sim_end-sim_start} (round {sim_start} - round {sim_end}) ...", flush=True)
@@ -128,7 +128,6 @@ for s in range(sim_start, sim_end):
         f"Simulating {n_sim} - protein in water - diffraction patterns...", flush=True
     )
     particle_intens = np.zeros(shape=(n_sim, dimY, dimX))
-    particle_real = np.zeros(shape=(n_sim, dimY, dimX))
     particle_orientations = np.zeros(shape=(n_sim, 4))
 
     def_rng = np.random.default_rng()
@@ -148,7 +147,6 @@ for s in range(sim_start, sim_end):
         real_space = np.fft.fftshift(np.fft.ifftn(data_ampl))
         I = np.abs(data_ampl) ** 2
         particle_intens[i, :, :] = I
-        particle_real[i, :, :] = np.fft.fftshift(np.fft.ifftn(np.fft.fftshift(I)))
         particle_orientations[i] = result["particles"]["particle_00"][
             "extrinsic_quaternion"
         ]
@@ -158,8 +156,7 @@ for s in range(sim_start, sim_end):
 
     particle_intens_masked[det_mask_ds_stack == False] = 0.0
     particle_intens_water_masked[det_mask_ds_stack == False] = 0.0
-
-    poiss_samp_no_mask = def_rng.poisson(lam=particle_intens)
+    
     poiss_samp = def_rng.poisson(lam=particle_intens_masked)
     poiss_samp_water = def_rng.poisson(lam=particle_intens_water_masked)
 
@@ -212,20 +209,12 @@ for s in range(sim_start, sim_end):
         arr=particle_intens,
     )
     np.save(
-        base_dir + folder_name + "poisson_prot.npy",
-        arr=poiss_samp_no_mask,
-    )
-    np.save(
         base_dir + folder_name + "poisson_prot_masked.npy",
         arr=poiss_samp,
     )
     np.save(
         base_dir + folder_name + "poisson_prot_with_water_masked.npy",
         arr=poiss_samp_water,
-    )
-    np.save(
-        base_dir + folder_name + "electron_density.npy",
-        arr=particle_real,
     )
     np.save(
         base_dir + folder_name + "orientations.npy",

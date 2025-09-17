@@ -1,6 +1,7 @@
 # Ignoring results folders in repository
 %userprofile%.condapkgs/
 debugging_code/
+debug_emc_phasing_plots/
 average_reconstructions/
 average_reconstructions_old/
 figures_debugging_support/

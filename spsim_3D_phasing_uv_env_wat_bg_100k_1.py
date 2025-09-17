@@ -13,7 +13,7 @@ import os, os.path, sys
 sys.path.append("/gpfs/exfel/u/scratch/SPB/202325/p006056/tong/water_spi_paper/")
 from helper_functions import sphere_idx
 
-import h5py
+import h5py 
 import numpy as np
 import time
 import scipy
@@ -25,10 +25,10 @@ c = constants.speed_of_light
 e = constants.elementary_charge
 h = constants.Planck
 
-subBg = False
-vnum = "10"
+subBg = True
+vnum = "1"
     
-emc_file = "emc/protein_water_ds_4x_0001/data_1M/prot_only_3/output_130.h5"
+emc_file = "emc/protein_water_ds_4x_0001/data_100k/prot_wat_1/output_130.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -37,7 +37,7 @@ I_emc = I_emc[:-1, :-1, :-1]
 W_emc = W_emc[:-1, :-1, :-1]
 
 if subBg:
-    emc_bg_file = "emc/water_only_ds_4x_0001/data_100k/wat_only_3/output_140.h5"
+    emc_bg_file = "emc/water_only_ds_4x_0001/data_1M/wat_only_3/output_140.h5"
     with h5py.File(emc_bg_file, "r") as f_bg:
         I_emc_bg = np.squeeze(f_bg["intens"][:])
     I_emc_bg = I_emc_bg[:-1, :-1, :-1]
@@ -93,12 +93,12 @@ vol_frac = volume_fraction_sphere
 supp_phase = support_sphere
 
 alg = "raar"
-n_recons = 140
+n_recons = 130
 niter_alg = 500
 niter_er = 400
 niter_store = 2
 
-beta_start = 0.20
+beta_start = 0.65
 beta_end = beta_start
 
 i_frac, f_frac = 1.25, 1.05
@@ -203,7 +203,7 @@ for i in range(n_recons):
     error_real_array[i] = error_real
     error_fourier_array[i] = error_fourier
 
-save_location = f"phasing_final_check/{dType}_{sType}_{pType[4:]}_v_{vnum}/"
+save_location = f"phasing/{dType}_{sType}_{pType[4:]}_v_{vnum}/"
 if os.path.exists(save_location) == False:
     os.mkdir(save_location)
     

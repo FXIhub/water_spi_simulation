@@ -118,7 +118,7 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 6, 10, 1
+sim_start, sim_end, sim_c = 49, 50, 1
 n_sim = 2000
 pat_ext = "100k"
 

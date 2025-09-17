@@ -26,9 +26,9 @@ e = constants.elementary_charge
 h = constants.Planck
 
 subBg = True
-vnum = "14"
+vnum = "1"
     
-emc_file = "emc/protein_water_ds_4x_0001/data_1M/prot_wat_3/output_130.h5"
+emc_file = "emc/protein_water_ds_4x_0001/data_100k/prot_wat_1/output_130.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -203,7 +203,7 @@ for i in range(n_recons):
     error_real_array[i] = error_real
     error_fourier_array[i] = error_fourier
 
-save_location = f"phasing_final_check/{dType}_{sType}_{pType[4:]}_v_{vnum}/"
+save_location = f"phasing/{dType}_{sType}_{pType[4:]}_v_{vnum}/"
 if os.path.exists(save_location) == False:
     os.mkdir(save_location)
     

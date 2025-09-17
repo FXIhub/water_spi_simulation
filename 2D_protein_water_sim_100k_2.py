@@ -1,6 +1,6 @@
 #!/gpfs/exfel/u/scratch/SPB/202325/p006056/tong/miniforge3/envs/spimage/bin/python
 #SBATCH --job-name='protein_with_water'
-#SBATCH --time=1-00:00:00
+#SBATCH --time=6-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
 #SBATCH --constraint='A100'
@@ -118,8 +118,8 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 2, 3, 1
-n_sim = 20000
+sim_start, sim_end, sim_c = 10, 15, 1
+n_sim = 2000
 pat_ext = "100k"
 
 for s in range(sim_start, sim_end):
