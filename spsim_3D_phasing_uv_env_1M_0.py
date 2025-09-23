@@ -3,7 +3,7 @@
 #SBATCH --time=2:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='V100|A100'
+#SBATCH --constraint='A100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -28,7 +28,7 @@ h = constants.Planck
 subBg = False
 vnum = "1"
     
-emc_file = "emc/protein_water_ds_4x_0001/data_1M/prot_only_0/output_130.h5"
+emc_file = "emc/protein_water_ds_4x_0001/data_1M/prot_only_3/output_130.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -93,12 +93,12 @@ vol_frac = volume_fraction_sphere
 supp_phase = support_sphere
 
 alg = "raar"
-n_recons = 140
+n_recons = 130
 niter_alg = 500
 niter_er = 400
 niter_store = 2
 
-beta_start = 0.20
+beta_start = 0.90
 beta_end = beta_start
 
 i_frac, f_frac = 1.25, 1.05
