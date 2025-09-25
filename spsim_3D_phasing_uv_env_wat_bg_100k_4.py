@@ -3,7 +3,7 @@
 #SBATCH --time=2:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='A100'
+#SBATCH --constraint='A100|V100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -26,7 +26,7 @@ e = constants.elementary_charge
 h = constants.Planck
 
 subBg = True
-vnum = "1"
+vnum = "2"
     
 emc_file = "emc/protein_water_ds_4x_0001/data_100k/prot_wat_4/output_130.h5"
 with h5py.File(emc_file, "r") as f_ptr:
@@ -98,7 +98,7 @@ niter_alg = 500
 niter_er = 400
 niter_store = 2
 
-beta_start = 0.75
+beta_start = 0.80
 beta_end = beta_start
 
 i_frac, f_frac = 1.25, 1.05
