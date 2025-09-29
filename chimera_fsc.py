@@ -5,20 +5,20 @@ import glob
 run(session, "log clear")
 
 # Fitting constants
-n_searches_trans = 10
-n_searches_rot = 10
+n_searches_trans = 15
+n_searches_rot = 15
 n_searches = n_searches_rot + n_searches_trans
-fit_metric = "correlation"
+fit_metric = "overlap"
 
 # Ground-truth DENSS electron density
-denss_mrc = "../1ss8_denss.mrc"
+denss_mrc = "../fsc_alignments/1ss8_denss.mrc"
 center_x, center_y, center_z = 89.5, 89.5, 89.5
 
 run(session, f"open {denss_mrc}")
 run(session, f"volume #1 originIndex {center_x},{center_y},{center_z}")
 
 # Merged densities
-dens_files = glob.glob("../*.h5")
+dens_files = glob.glob("../fsc_alignments/*.h5")
 dens_vox_size = 2.3776362931527845 # for 4x in Å
 center_dens = 186.5
 dim = 374
@@ -53,22 +53,22 @@ for f in range(N_files):
     run(session, "fitmap #4 inMap #3")
     run(
         session,
-        f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_trans} placement s levelInside 0.01",
+        f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_trans} placement s levelInside 0.1",
     )
     run(
         session,
-        f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_rot} placement r levelInside 0.01",
+        f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_rot} placement r levelInside 0.1",
     )
     run(session, "fitmap #4 inMap #3")
 
     run(session, "fitmap #5 inMap #3")
     run(
         session,
-        f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_trans} placement s levelInside 0.01",
+        f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_trans} placement s levelInside 0.1",
     )
     run(
         session,
-        f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_rot} placement r levelInside 0.01",
+        f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_rot} placement r levelInside 0.1",
     )
     run(session, "fitmap #5 inMap #3")
 
@@ -81,5 +81,5 @@ for f in range(N_files):
     run(session, "close #4,5,6,7")
 
 # Save ChimeraX density after fitting done and close all models
-run(session, f"save ../1ss8_denss_rs.mrc #3")
+run(session, f"save ../fsc_alignments/1ss8_denss_rs.mrc #3")
 run(session, "close all")
