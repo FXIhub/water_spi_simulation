@@ -5,10 +5,10 @@ import glob
 run(session, "log clear")
 
 # Fitting constants
-n_searches_trans = 15
-n_searches_rot = 15
+n_searches_trans = 5
+n_searches_rot = 5
 n_searches = n_searches_rot + n_searches_trans
-fit_metric = "overlap"
+fit_metric = "correlation"
 
 # Ground-truth DENSS electron density
 denss_mrc = "../fsc_alignments/1ss8_denss.mrc"
@@ -19,10 +19,10 @@ run(session, f"volume #1 originIndex {center_x},{center_y},{center_z}")
 
 # Merged densities
 dens_files = glob.glob("../fsc_alignments/*.h5")
-dens_vox_size = 2.3776362931527845 # for 4x in Å
+dens_vox_size = 2.3776362931527845
 center_dens = 186.5
 dim = 374
-N_files = 3 #len(dens_files) # TEST WITH THREE FILES FIRST!!!
+N_files = len(dens_files)
 
 # Loop over all densities and fit both the density/centrosymmetric twin
 for f in range(N_files):
