@@ -22,7 +22,7 @@ dens_files = glob.glob("../fsc_alignments/*.h5")
 dens_vox_size = 2.3776362931527845 # for 4x in Å
 center_dens = 186.5
 dim = 374
-N_files = len(dens_files)
+N_files = 3 #len(dens_files) # TEST WITH THREE FILES FIRST!!!
 
 # Loop over all densities and fit both the density/centrosymmetric twin
 for f in range(N_files):
@@ -53,22 +53,22 @@ for f in range(N_files):
     run(session, "fitmap #4 inMap #3")
     run(
         session,
-        f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_trans} placement s levelInside 0.1",
+        f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_trans} placement s",
     )
     run(
         session,
-        f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_rot} placement r levelInside 0.1",
+        f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_rot} placement r",
     )
     run(session, "fitmap #4 inMap #3")
 
     run(session, "fitmap #5 inMap #3")
     run(
         session,
-        f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_trans} placement s levelInside 0.1",
+        f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_trans} placement s",
     )
     run(
         session,
-        f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_rot} placement r levelInside 0.1",
+        f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_rot} placement r",
     )
     run(session, "fitmap #5 inMap #3")
 
