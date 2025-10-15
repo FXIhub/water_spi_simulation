@@ -118,9 +118,9 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 1, 5, 1
+sim_start, sim_end, sim_c = 0, 5, 1
 n_sim = 2000
-pat_ext = "100k"
+pat_ext = "10k"
 
 for s in range(sim_start, sim_end):
     print(f"\rSimulating round {sim_c}/{sim_end-sim_start} (round {sim_start} - round {sim_end}) ...", flush=True)

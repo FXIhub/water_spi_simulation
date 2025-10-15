@@ -3,7 +3,7 @@
 #SBATCH --time=6-00:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='A100'
+#SBATCH --constraint='A100|V100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -118,7 +118,7 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 44, 45, 1
+sim_start, sim_end, sim_c = 34, 35, 1
 n_sim = 2000
 pat_ext = "100k"
 

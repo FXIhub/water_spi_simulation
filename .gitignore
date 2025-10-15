@@ -17,6 +17,10 @@ emc/
 figures/
 figures_fsc/
 figures_rfactor/
+figures_rfactor_old/
+sparse_frames_protein_water_old/
+sims_protein_water_old/
+emc_old/
 phasing/
 r_factors/
 sims_protein_water/
