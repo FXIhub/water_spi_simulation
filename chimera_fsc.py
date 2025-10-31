@@ -5,23 +5,23 @@ import glob
 run(session, "log clear")
 
 # Fitting constants
-n_searches_trans = 5
-n_searches_rot = 5
+n_searches_trans = 1
+n_searches_rot = 1
 n_searches = n_searches_rot + n_searches_trans
 fit_metric = "correlation"
 
 # Ground-truth DENSS electron density
-denss_mrc = "../fsc_alignments/1ss8_denss.mrc"
+denss_mrc = "../fsc_alignments_final/1ss8_denss.mrc"
 center_x, center_y, center_z = 89.5, 89.5, 89.5
 
 run(session, f"open {denss_mrc}")
 run(session, f"volume #1 originIndex {center_x},{center_y},{center_z}")
 
 # Merged densities
-dens_files = glob.glob("../fsc_alignments/*.h5")
-dens_vox_size = 2.3776362931527845
-center_dens = 186.5
-dim = 374
+dens_files = glob.glob("../fsc_alignments_final/*.h5")
+dens_vox_size = 1.451125917991576 # different voxel size for 0.3 m distance - 1.451125917991576 Å and for 0.5 m distance it is 2.3776362931527845
+center_dens = 177.5 # for 0.5 m it is 186.5 and for 0.3 it is 177.5
+dim = 356 # for 0.5 m it is 374 and for 0.3 it is 356
 N_files = len(dens_files)
 
 # Loop over all densities and fit both the density/centrosymmetric twin
@@ -81,5 +81,5 @@ for f in range(N_files):
     run(session, "close #4,5,6,7")
 
 # Save ChimeraX density after fitting done and close all models
-run(session, f"save ../fsc_alignments/1ss8_denss_rs.mrc #3")
+run(session, f"save ../fsc_alignments_final/1ss8_denss_rs.mrc #3")
 run(session, "close all")

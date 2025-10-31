@@ -5,21 +5,21 @@ import glob
 run(session, "log clear")
 
 # Fitting constants
-n_searches_trans = 60
-n_searches_rot = 60
+n_searches_trans = 10
+n_searches_rot = 10
 n_searches = n_searches_rot + n_searches_trans
 fit_metric = "correlation"
 
 # Condor model
-gt_file = "../r_factor_alignments/3d_groel_agipd_9_kev_denss_dsf_4x_trm.h5"
+gt_file = "../r_factor_alignments_final/3d_groel_agipd_9_kev_denss_dsf_4x_trm.h5"
 gt_file_mrc = gt_file.split(sep=".h5")[0] + f"_{n_searches}.mrc"
-#center_gt = 186.5 # for 4x it is 186.5
-#run(session, f"open {gt_file}")
-run(session, "open ../r_factor_alignments/3d_groel_agipd_9_kev_denss_dsf_4x_trm_120.mrc")
-#run(session, f"volume #1 originIndex {center_gt},{center_gt},{center_gt}")
+center_gt = 186.5 # for 4x it is 186.5
+run(session, f"open {gt_file}")
+#run(session, "open ../r_factor_alignments/3d_groel_agipd_9_kev_denss_dsf_4x_trm_120.mrc")
+run(session, f"volume #1 originIndex {center_gt},{center_gt},{center_gt}")
 
 # EMC models
-emc_files = glob.glob("../r_factor_alignments/*_corr.h5")
+emc_files = glob.glob("../r_factor_alignments_final/*_corr.h5")
 center_emc = 186.5 # for 4x it is 186.5
 N_files = len(emc_files)
 
@@ -46,5 +46,5 @@ for f in range(N_files):
 run(session, f"log text Aligned {N_files} EMC files...")
 
 # Save ground-truth model after fitting done and close all models
-#run(session, f"save {gt_file_mrc} #1")
+run(session, f"save {gt_file_mrc} #1")
 run(session, "close all")
