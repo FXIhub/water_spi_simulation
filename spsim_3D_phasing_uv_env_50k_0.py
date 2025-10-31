@@ -26,9 +26,9 @@ e = constants.elementary_charge
 h = constants.Planck
 
 subBg = False
-vnum = "4"
+vnum = "1"
     
-emc_file = "emc/protein_water_ds_4x_0001/data_10k/prot_only_0/output_130.h5"
+emc_file = "emc/protein_water_ds_4x_new_dist_0001/data_50k/prot_only_1/output_130.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -60,7 +60,7 @@ print(f"Phasing {pType} model ({npats} patterns)!")
 
 e_photon_eV = 9000
 lambda_photon = (h * c) / (e_photon_eV * e)
-d_detector = 0.5
+d_detector = 0.3
 s_pixel = 800e-6
 
 dimX = frame.shape[0]
@@ -98,7 +98,7 @@ niter_alg = 500
 niter_er = 400
 niter_store = 2
 
-beta_start = 0.95
+beta_start = 0.90
 beta_end = beta_start
 
 i_frac, f_frac = 1.25, 1.05
