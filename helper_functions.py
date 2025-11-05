@@ -6,6 +6,7 @@ import scipy.fft as fft
 import scipy.constants as constants
 
 from sys import stderr
+import math
 
 
 def fourier_shell_correlation(vol_1=None, vol_2=None, shell=1):
@@ -209,6 +210,23 @@ def add_water_saxs(img, px_size, distance, wavelength, pulse_energy):
     water = (np.ones_like(img) * sample_thickness * pixel_solid_angle * pol_correction * n_photons * water_xs)
 
     return water
+
+
+def det_dist_solver(det_dist_0, dimX, pixel_size, n_iters=1):
+    A = (dimX // 2) * float(pixel_size)
+    if A <= 0:
+        raise ValueError("A = (dimX//2)*pixel_size must be positive.")
+
+    d = float(det_dist_0)
+    for k in range(n_iters):
+        x = A / (2.0 * d)
+        if abs(x) >= 1.0:
+            if k == 0:
+                raise ValueError("Initial guess leads to invalid arcsin argument.")
+            # Stop and return the last valid value
+            break
+        d = A / math.tan(2.0 * math.asin(x))
+    return d
 
 
 def numpy_array_to_image(img,msk=None):

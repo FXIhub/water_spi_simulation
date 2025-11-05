@@ -63,7 +63,7 @@ else:
 pixel_num_x = dimX - dimX // 2
 pixel_num_y = dimY - dimY // 2
 
-det_dist = 0.4
+det_dist = 0.5
 
 focus_diam = 14e-9
 focus_rad = focus_diam / 2
@@ -115,7 +115,7 @@ for s in range(sim_start, sim_end):
     time_now = time.localtime(time.time())
 
     base_dir = f"sims_water_only/"
-    folder_name = f"run_{s}_water_{pat_ext}_pats_dsf_{dsf}x/"
+    folder_name = f"run_{s}_water_{pat_ext}_pats_dsf_{dsf}x_05/"
 
     if os.path.exists(base_dir + folder_name):
         print("Path exists!", flush=True)

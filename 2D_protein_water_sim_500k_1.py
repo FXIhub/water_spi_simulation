@@ -67,7 +67,7 @@ else:
 pixel_num_x = dimX - dimX // 2
 pixel_num_y = dimY - dimY // 2
 
-det_dist = 0.4
+det_dist = 0.5
 
 D_particle = 15e-9 # assume largest size for GroEL
 focus_diam = 14e-9
@@ -118,7 +118,7 @@ detector = condor.Detector(distance=det_dist, pixel_size=pixel_size, nx=dimX, ny
 
 condor_experiment = condor.Experiment(source, particle_set, detector)
 
-sim_start, sim_end, sim_c = 550, 600, 1
+sim_start, sim_end, sim_c = 50, 100, 1
 n_sim = 1000
 pat_ext = "500k"
 
@@ -164,7 +164,7 @@ for s in range(sim_start, sim_end):
     poiss_samp_water = def_rng.poisson(lam=particle_intens_water_masked)
 
     base_dir = f"sims_protein_water/"
-    folder_name = f"run_{s}_protein_in_water_{pat_ext}_pats_dsf_{dsf}x/"
+    folder_name = f"run_{s}_protein_in_water_{pat_ext}_pats_dsf_{dsf}x_05/"
 
     if os.path.exists(base_dir + folder_name):
         print("Path exists!", flush=True)
