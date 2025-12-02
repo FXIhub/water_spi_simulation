@@ -19,7 +19,7 @@ run(session, f"volume #1 originIndex {center_x},{center_y},{center_z}")
 
 # Merged densities
 dens_files = glob.glob("../fsc_alignments/*.h5")
-dens_vox_size = 2.3776362931527846 # for 0.5 m
+dens_vox_size = 2.3021449320029004 # for 0.5 m
 center_dens = 186.5 # for 0.5 m
 dim = 374 # for 0.5 m
 N_files = len(dens_files)

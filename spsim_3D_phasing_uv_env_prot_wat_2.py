@@ -26,7 +26,7 @@ e = constants.elementary_charge
 h = constants.Planck
 
 subBg = True
-vnum = "2"
+vnum = "1"
     
 emc_file = "emc/protein_water_ds_4x_0001/data_1M/prot_wat_2/output_130.h5"
 with h5py.File(emc_file, "r") as f_ptr:
@@ -58,35 +58,23 @@ sType = file.split(sep="/")[2]
 pType = "emc_" + file.split(sep="/")[3]
 print(f"Phasing {pType} model ({npats} patterns)!")
 
-e_photon_eV = 9000
-lambda_photon = (h * c) / (e_photon_eV * e)
+lambda_photon = (h * c) / (9000 * e)
 d_detector = 0.5
 s_pixel = 800e-6
-
 dimX = frame.shape[0]
-dimY = frame.shape[1]
-dimZ = frame.shape[2]
-
-pixel_num = dimX - dimX // 2
-theta_pixel = 0.5 * np.arctan((pixel_num * s_pixel) / d_detector)
-center_to_corner = np.sqrt((pixel_num * s_pixel) ** 2 + (pixel_num * s_pixel) ** 2)
-theta_max = 0.5 * np.arctan(center_to_corner / d_detector)
-
-resolution = lambda_photon / (2.0 * np.sin(theta_pixel))
-resolution_max = lambda_photon / (2.0 * np.sin(theta_max))
-voxel_size = 0.5 * resolution
+voxel_size, _ , _ = calc_voxel_size(lambda_photon, d_detector, s_pixel, dimX)
 
 R_part = (15e-9) / 2
 R_particle_vox = R_part / voxel_size
 
 volume_fraction_sphere = (((4/3) * pi) * (R_particle_vox**3)) / (
-    dimX * dimY * dimZ
+    dimX * dimX * dimX
 )
 
 support_sphere = sphere_idx(
     shape=frame.shape,
     radius=R_particle_vox,
-    position=(dimX // 2, dimY // 2, dimZ // 2),
+    position=(dimX // 2, dimX // 2, dimX // 2),
 )
 
 vol_frac = volume_fraction_sphere
@@ -226,8 +214,8 @@ with open(save_location + "phasing_params.txt", "w") as handle:
     handle.write(f"File to phase: {file}\n")
     handle.write(f"EMC fraction good : {frac_emc_good}\n")
     handle.write(f"Fourier mask: {fourier_mask}\n")
-    handle.write(f"Array size: ({dimX}, {dimY}, {dimZ})\n")
-    handle.write(f"Voxel size: {voxel_size*1e9} nm\n")
+    handle.write(f"Array size: ({dimX}, {dimX}, {dimX})\n")
+    handle.write(f"Voxel size: {voxel_size*1e10} Å\n")
     handle.write(f"Volume percentage initial and i_frac: {volume_i*100}% and {i_frac}\n")
     handle.write(f"Volume percentage final and f_frac: {volume_f*100}% and {f_frac}\n")
     handle.write(f"Number of voxels in support: {supp_phase.sum()}\n")
