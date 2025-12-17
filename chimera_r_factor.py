@@ -11,7 +11,7 @@ n_searches = n_searches_rot + n_searches_trans
 fit_metric = "correlation"
 
 # Condor model
-gt_file = "../r_factor_alignments/3d_groel_agipd_9_kev_denss_dsf_4x_trm.h5"
+gt_file = "../r_factor_alignments/3d_groel_agipd_9_kev_denss_dsf_4x_05_trm.h5"
 gt_file_mrc = gt_file.split(sep=".h5")[0] + f"_{n_searches}.mrc"
 center_gt = 186.5
 run(session, f"open {gt_file}")

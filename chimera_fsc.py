@@ -59,6 +59,10 @@ for f in range(N_files):
         session,
         f"fitmap #4 inMap #3 metric {fit_metric} search {n_searches_rot} placement r",
     )
+    run(
+        session,
+        f"fitmap #4 inMap #3 metric overlap search 5 placement sr",
+    )
     run(session, "fitmap #4 inMap #3")
 
     run(session, "fitmap #5 inMap #3")
@@ -69,6 +73,10 @@ for f in range(N_files):
     run(
         session,
         f"fitmap #5 inMap #3 metric {fit_metric} search {n_searches_rot} placement r",
+    )
+    run(
+        session,
+        f"fitmap #5 inMap #3 metric overlap search 5 placement sr",
     )
     run(session, "fitmap #5 inMap #3")
 
