@@ -3,7 +3,7 @@
 #SBATCH --time=2:00:00
 #SBATCH --nodes=1
 #SBATCH --partition=allgpu
-#SBATCH --constraint='A100|V100'
+#SBATCH --constraint='A100'
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=tong.you@icm.uu.se
 #SBATCH -o slurm_output/%j.out
@@ -11,7 +11,7 @@
 
 import os, os.path, sys
 sys.path.append("/gpfs/exfel/u/scratch/SPB/202325/p006056/tong/water_spi_paper/")
-from helper_functions import sphere_idx
+from helper_functions import sphere_idx, calc_voxel_size
 
 import h5py 
 import numpy as np
@@ -28,7 +28,7 @@ h = constants.Planck
 subBg = False
 vnum = "1"
     
-emc_file = "emc/protein_water_ds_4x_0001/data_1M/prot_only_2/output_130.h5"
+emc_file = "emc/protein_water_ds_4x_fin_0001/data_100k_05/prot_only_2/output_130.h5"
 with h5py.File(emc_file, "r") as f_ptr:
     I_emc = np.squeeze(f_ptr["intens"][:])
     W_emc = np.squeeze(f_ptr["inter_weight"][:])
@@ -58,7 +58,8 @@ sType = file.split(sep="/")[2]
 pType = "emc_" + file.split(sep="/")[3]
 print(f"Phasing {pType} model ({npats} patterns)!")
 
-lambda_photon = (h * c) / (9000 * e)
+e_photon_eV = 9000
+lambda_photon = (h * c) / (e_photon_eV * e)
 d_detector = 0.5
 s_pixel = 800e-6
 dimX = frame.shape[0]
@@ -82,14 +83,14 @@ supp_phase = support_sphere
 
 alg = "raar"
 n_recons = 130
-niter_alg = 500
-niter_er = 400
+niter_alg = 900
+niter_er = 600
 niter_store = 2
 
-beta_start = 0.80
+beta_start = 0.9
 beta_end = beta_start
 
-i_frac, f_frac = 1.25, 1.05
+i_frac, f_frac = 1.3, 0.8
 volume_i, volume_f = i_frac * vol_frac, f_frac * vol_frac
 
 blur_i, blur_f = 1.5, 1.0
