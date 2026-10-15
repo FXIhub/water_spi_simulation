@@ -71,6 +71,7 @@ focus_rad = focus_diam / 2
 beam_area = pi * (focus_rad**2)
 beam_phots = pulse_energy / phot_J
 beam_fluence = beam_phots / beam_area
+beam_fluence *= np.log(2)  # peak fluence of a Gaussian focus (top-hat -> Gaussian)
 
 theta_pixel_x = 0.5 * np.arctan((pixel_num_x * pixel_size) / det_dist)
 theta_pixel_y = 0.5 * np.arctan((pixel_num_y * pixel_size) / det_dist)
